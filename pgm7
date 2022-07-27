@@ -1,129 +1,130 @@
-// CPU Scheduling -Round Robin
-#include<stdio.h>
-struct process
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+void SRTF_Scheduling(int *,int *,int);
+void RR_Scheduling(int *,int *,int);
+float avg_wt,avg_tt;
+int bt[10];
+void main()
 {
-	char name;
-	int at,bt,wt,tt,rt;
-	int completed;
-}p[10];
+int choice,p[10],st[10],brt[10];
+int i,j,n,tq,pos;
+printf(&quot;Enter the number of process:&quot;);
+scanf(&quot;%d&quot;,&amp;n);
+printf(&quot;Enter the burst time:&quot;);
+for(i=0;i&lt;n;i++)
+{
+printf(&quot;\nP[%d]:&quot;,i);
+scanf(&quot;%d&quot;,&amp;bt[i]);
+p[i]=i;
+st[i]=bt[i];
+brt[i]=bt[i];
+}
+while(1)
+{
+printf(&quot;\nMENU\n1.SRTF_Scheduling\n2.RR_Scheduling\n3.EXIT\n&quot;);
+printf(&quot;Enter the choice:&quot;);
+scanf(&quot;%d&quot;,&amp;choice);
+switch(choice)
+{
+case 1:SRTF_Scheduling(p,bt,n);
+break;
 
-int n;
-int q[10];  //queue
-int front=-1,rear=-1;
-void enqueue(int i)
+case 2:RR_Scheduling(st,brt,n);
+break;
+case 3:exit(0);
+}
+printf(&quot;\n Average waiting time is:%f&quot;,avg_wt);
+printf(&quot;\n Average turn around time is:%f&quot;,avg_tt);
+}
+}
+void SRTF_Scheduling(int p[],int bt[],int n)
 {
-    if(rear==10)
-        printf("overflow");
-    rear++;
-    q[rear]=i;
-    if(front==-1)
-        front=0;
+int at[10],x[10],i,j,small,count=0,time,wt[10],tat[10];
+int avg[10],tt[10],a=0,t=0;
+double end;
+printf(&quot;Enter arrival time:&quot;);
+for(i=0;i&lt;n;i++)
+{
+scanf(&quot;%d&quot;,&amp;at[i]);
+}
+for(i=0;i&lt;n;i++)
+{
+x[i]=bt[i];
+avg[i]=0;
+tt[i]=0;
+}
+bt[9]=9999;
+for(time=0;count!=n;time++)
+{
+small=9;
+for(i=0;i&lt;n;i++)
+{
+if(at[i]&lt;=time &amp;&amp; bt[i]&lt;bt[small] &amp;&amp; bt[i]&gt;0)
+small=i;
 }
 
-int dequeue()
+bt[small]--;
+if(bt[small]==0)
 {
-    if(front==-1)
-        printf("underflow");
-    int temp=q[front];
-    if(front==rear)
-        front=rear=-1;
-    else
-        front++;
-    return temp;
+count++;
+end=time+1;
+avg[small]=end-at[small]-x[small];
+tt[small]=end-at[small];
+t=t+tt[small];
+a=a+avg[small];
 }
-
-int isInQueue(int i)
-{
-    int k;
-    for(k=front;k<=rear;k++)
-    {
-        if(q[k]==i)
-        return 1;
-    }
-    return 0;
 }
-
-void sortByArrival()
+printf(&quot;Process no.\tBurst time\t Arrival time\tWaiting time\t\ttt\n&quot;);
+for(i=0;i&lt;n;i++)
 {
-    struct process temp;
-    int i,j;
-    for(i=0;i<n-1;i++)
-    {
-        for(j=i+1;j<n;j++)
-        {
-            if(p[i].at>p[j].at)
-            {
-                temp=p[i];
-                p[i]=p[j];
-                p[j]=temp;
-            }
-        }
-    }
+printf(&quot;p%d\t\t\t%d\t\t%d\t\t%d\t\t%d\n&quot;,p[i],x[i],at[i],avg[i],tt[i]);
 }
-
-int main()
+avg_wt=(float)a/n;
+avg_tt=(float)t/n;
+}
+void RR_Scheduling(int st[],int brt[],int n)
 {
-    int i,j,time=0,sum_bt=0,tq;
-    char c;
-    float avgwt=0;
-     printf("Enter Number of Processes:\n");
-     scanf("%d",&n);
-     for(i=0,c='A';i<n;i++,c++)
-     {
-         p[i].name=c;
-         printf("\nProcess %c\n",c);
-         printf("\tArrival Time :");
-         scanf("%d",&p[i].at);
-         printf("\tBurst Time :");
-         scanf("%d",&p[i].bt);
-         p[i].rt=p[i].bt;
-         p[i].completed=0;
-         sum_bt+=p[i].bt;
-    }
-    printf("\nEnter the time quantum:");
-    scanf("%d",&tq);
-    sortByArrival();
-    enqueue(0);
-    printf("\nProcess execution order: ");
-    for(time=p[0].at;time<sum_bt;)
-    {
-        i=dequeue();
-        if(p[i].rt<=tq)
-        {
-            time+=p[i].rt;
-            p[i].rt=0;
-            p[i].completed=1;
-            printf(" %c ",p[i].name);
-            p[i].wt=time-p[i].at-p[i].bt;
-            p[i].tt=time-p[i].at;
-            for(j=0;j<n;j++)
-            {
-                if(p[j].at<=time && p[j].completed!=1&& isInQueue(j)!=1)
-                {
-                    enqueue(j);
-                }
-            }
-        }
-        else
-        {
-            time+=tq;
-            p[i].rt-=tq;
-            printf(" %c ",p[i].name);
-            for(j=0;j<n;j++)
-            {
-                if(p[j].at<=time && p[j].completed!=1&&i!=j&& isInQueue(j)!=1)
-                {
-                    enqueue(j);
-                }
-            }
-            enqueue(i);
-        }
-    }
-    printf("\n\nName\tArrival Time\tBurst Time\tResponse Time\tTurnAround Time");
-    for(i=0;i<n;i++)
-    {
-        avgwt+=p[i].wt;
-        printf("\n%c\t\t%d\t\t%d\t\t%d\t\t%d",p[i].name,p[i].at,p[i].bt,p[i].wt,p[i].tt);
-    }
-    printf("\n\nAverage waiting time:%f",avgwt/n);
+int wt[10],ti[10],tq=0,i,count=0,swt=0,stt=0,p[20],temp,sq=0,tt[10],q;
+printf(&quot;Enter the quantum:&quot;);
+scanf(&quot;%d&quot;,&amp;tq);
+while(1)
+{
+for(i=0,count=0;i&lt;n;i++)
+{
+temp=tq;
+if(st[i]==0)
+{
+count++;
+continue;
+
+}
+if(st[i]&gt;tq)
+{
+st[i]=st[i]-tq;
+}
+else if(st[i]&gt;=0)
+{
+temp=st[i];
+st[i]=0;
+}
+sq=sq+temp;
+tt[i]=sq;
+}
+if(n==count)
+break;
+}
+for(i=0;i&lt;n;i++)
+{
+wt[i]=tt[i]-brt[i];
+swt=swt+wt[i];
+stt=stt+tt[i];
+p[i]=i+1;
+}
+avg_wt=(float)swt/n;
+avg_tt=(float)stt/n;
+printf(&quot;Process no.\tBurstTime\tWaitingTime\tTurnaroundTime\n&quot;);
+for(i=0;i&lt;n;i++)
+{
+printf(&quot;P[%d]\t\t%d\t\t%d\t\t\t%d\n&quot;,p[i],brt[i],wt[i],tt[i]);
+}
 }
